@@ -621,7 +621,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <button class="btn-close" onclick="closeEmpModal()">&#x2715;</button>
     </div>
     <div class="modal-body">
-      <div class="fg"><label>Name</label><input type="text" id="eN" placeholder="Vorname Nachname"></div>
+      <div class="form-row">
+        <div class="fg"><label>Vorname</label><input type="text" id="eVorname" placeholder="z.B. Anna"></div>
+        <div class="fg"><label>Nachname</label><input type="text" id="eNachname" placeholder="z.B. Müller"></div>
+      </div>
+      <div class="fg"><label>Kontakt</label><input type="text" id="eKontakt" placeholder="Telefon oder E-Mail"></div>
+      <div class="fg"><label>Adresse</label><input type="text" id="eAdresse" placeholder="Straße, PLZ Ort"></div>
       <div class="fg">
         <label>Beschäftigungsart</label>
         <select id="eT" onchange="empTypeChange()">
@@ -640,7 +645,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         </select>
       </div>
       <div class="fg"><label>Farbe im Dienstplan</label><input type="color" id="eC" value="#6366f1"></div>
-      <div class="fg"><label>Notiz (optional)</label><textarea id="eNote" placeholder="Besonderheiten, Kontakt ..."></textarea></div>
+      <div class="fg"><label>Notiz (optional)</label><textarea id="eNote" placeholder="Besonderheiten ..."></textarea></div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeEmpModal()">Abbrechen</button>
         <button class="btn btn-primary" onclick="saveEmp()">Speichern</button>
@@ -1591,6 +1596,8 @@ function renderEmps(){
         ${e.type==='werkstudent'?`<div>Status: <strong>${e.semester?'Semester (max. 20h/Wo.)':'Semesterferien (max. 40h/Wo.)'}</strong></div>`:''}
         ${(e.type==='teilzeit'||e.type==='festangestellt')&&e.hours?`<div>Vertrag: <strong>${e.hours}h/Woche</strong></div>`:''}
         ${e.type==='minijob'?`<div>Verdienstgrenze: <strong>${MINIJOB_MAX} €/Monat</strong></div>`:''}
+        ${e.kontakt?`<div>Kontakt: <strong>${esc(e.kontakt)}</strong></div>`:''}
+        ${e.adresse?`<div>Adresse: <strong>${esc(e.adresse)}</strong></div>`:''}
         ${e.note?`<div style="font-style:italic;margin-top:4px">${esc(e.note)}</div>`:''}
       </div>
       <div class="emp-note-area">
@@ -1616,14 +1623,21 @@ function openEmpModal(id){
   document.getElementById('empModalTitle').textContent=id?'Mitarbeiter bearbeiten':'Mitarbeiter hinzufügen';
   if(id){
     const e=S.emps.find(x=>x.id===id);
-    document.getElementById('eN').value=e.name;
+    const parts=e.name.split(' ');
+    document.getElementById('eVorname').value=e.vorname||(parts[0]||'');
+    document.getElementById('eNachname').value=e.nachname||(parts.slice(1).join(' ')||'');
+    document.getElementById('eKontakt').value=e.kontakt||'';
+    document.getElementById('eAdresse').value=e.adresse||'';
     document.getElementById('eT').value=e.type;
     document.getElementById('eCon').value=e.hours||'';
     document.getElementById('eSem').value=String(e.semester??true);
     document.getElementById('eC').value=e.color||'#6366f1';
     document.getElementById('eNote').value=e.note||'';
   }else{
-    document.getElementById('eN').value='';
+    document.getElementById('eVorname').value='';
+    document.getElementById('eNachname').value='';
+    document.getElementById('eKontakt').value='';
+    document.getElementById('eAdresse').value='';
     document.getElementById('eT').value='festangestellt';
     document.getElementById('eCon').value='';
     document.getElementById('eSem').value='true';
@@ -1641,9 +1655,14 @@ function empTypeChange(){
   document.getElementById('eConL').textContent=t==='teilzeit'?'Vertragliche Wochenstunden':'Wochenstunden (Soll)';
 }
 function saveEmp(){
-  const name=document.getElementById('eN').value.trim();
-  if(!name){alert('Bitte einen Namen eingeben.');return;}
-  const data={name,type:document.getElementById('eT').value,
+  const vorname=document.getElementById('eVorname').value.trim();
+  const nachname=document.getElementById('eNachname').value.trim();
+  if(!vorname){alert('Bitte einen Vornamen eingeben.');return;}
+  const name=(vorname+' '+nachname).trim();
+  const data={name,vorname,nachname,
+    kontakt:document.getElementById('eKontakt').value.trim(),
+    adresse:document.getElementById('eAdresse').value.trim(),
+    type:document.getElementById('eT').value,
     hours:parseInt(document.getElementById('eCon').value)||null,
     semester:document.getElementById('eSem').value==='true',
     color:document.getElementById('eC').value,
@@ -1775,22 +1794,28 @@ function printPlan(){
     while(ldate(cur)<=end){const d=ldate(cur);if(d>=ds(y,m,1)&&d<=ds(y,m,total))dates.push(d);cur.setDate(cur.getDate()+1);}
     if(!dates.length)return;
     html+=`<div class="pv-week"><div class="pv-week-header">${wLabel}<span class="pv-subinfo">${dates.length} Tag${dates.length>1?'e':''} dieses Monats</span></div>
-    <table class="pv-table"><thead><tr><th class="pv-td-day">Tag</th>${S.emps.map(e=>`<th>${esc(e.name)}</th>`).join('')}<th class="pv-td-info">Info</th></tr></thead><tbody>`;
+    <table class="pv-table"><thead><tr><th class="pv-td-day">Tag</th><th>Frühschicht</th><th>Spätschicht</th><th class="pv-td-info">Informationen</th></tr></thead><tbody>`;
     dates.forEach(date=>{
       const dt=new Date(date+'T00:00:00'),dow=dt.getDay();
       const isH=holidays.has(date),hLabel=holidays.get(date)||'';
       const note=S.dayInfo[date]||'';
       const red=dow===0||isH;
+      const frueh=[],spaet=[];
+      S.emps.forEach(emp=>{
+        const ab=absenceOn(emp.id,date);
+        const empShifts=(S.shifts[date]||[]).filter(s=>s.eid===emp.id);
+        empShifts.forEach(s=>{
+          const entry=`${esc(emp.name)} ${esc(s.s)}–${esc(s.e)}`;
+          if(s.s<'14:00')frueh.push(entry);else spaet.push(entry);
+        });
+        if(ab&&!empShifts.length){
+          frueh.push(`${esc(emp.name)}: ${esc(ABS_TYPES[ab.type]?.label||ab.type)}`);
+        }
+      });
       html+=`<tr${red?' style="background:#fff8f8"':''}>`;
       html+=`<td class="pv-td-day" style="${red?'color:#c00;font-weight:700':''}">${WDAYS_S[dow]} ${dt.getDate()}.${isH?`<br><span class="pv-date">${esc(hLabel)}</span>`:''}</td>`;
-      S.emps.forEach(emp=>{
-        const sh=(S.shifts[date]||[]).filter(s=>s.eid===emp.id);
-        const ab=absenceOn(emp.id,date);
-        let cell='';
-        if(ab)cell=`<span class="pv-abs">${esc(ABS_TYPES[ab.type]?.label||ab.type)}</span>`;
-        else if(sh.length)cell=sh.map(s=>`<span class="pv-emp-entry">${esc(s.s)}–${esc(s.e)}</span>`).join('');
-        html+=`<td>${cell||'—'}</td>`;
-      });
+      html+=`<td>${frueh.length?frueh.map(e=>`<span class="pv-emp-entry">${e}</span>`).join(''):'—'}</td>`;
+      html+=`<td>${spaet.length?spaet.map(e=>`<span class="pv-emp-entry">${e}</span>`).join(''):'—'}</td>`;
       html+=`<td class="pv-td-info">${note?`<span class="pv-day-note">${esc(note)}</span>`:''}</td></tr>`;
     });
     html+=`</tbody></table></div>`;
