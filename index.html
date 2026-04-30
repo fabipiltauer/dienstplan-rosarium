@@ -151,7 +151,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 [data-theme="dark"] .cal-header{background:#020617}
 .cal-header-cell{padding:9px 4px;text-align:center;font-size:.82rem;font-weight:600;color:#f1f5f9}
 .cal-body{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--border);border-top:1px solid var(--border)}
-.cal-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:105px;padding:5px;cursor:pointer;transition:.12s;position:relative;background:var(--bg-card)}
+.cal-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:105px;padding:5px;cursor:pointer;transition:.12s;position:relative;background:var(--bg-card);min-width:0;overflow:hidden}
 .cal-cell:hover{background:rgba(192,57,43,.05)}
 .cal-cell.other-month{background:var(--bg);opacity:.4;cursor:default;pointer-events:none}
 .cal-cell.today{background:rgba(192,57,43,.07)}
@@ -159,8 +159,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .cal-cell.holiday{background:rgba(251,191,36,.06)}
 .cell-number{font-size:.78rem;font-weight:700;color:var(--text-muted);width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-bottom:3px}
 .cal-cell.today .cell-number{background:var(--primary);color:#fff}
-.shift-badge{display:flex;align-items:center;gap:3px;background:var(--ec);color:#fff;border-radius:4px;padding:2px 5px;margin-bottom:2px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap}
-.badge-name{overflow:hidden;text-overflow:ellipsis;max-width:50px}
+.shift-badge{display:flex;align-items:center;gap:3px;background:var(--ec);color:#fff;border-radius:4px;padding:2px 5px;margin-bottom:2px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;max-width:100%}
+.badge-name{overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
 .badge-time{opacity:.88;font-size:.63rem;flex-shrink:0}
 .cal-holiday-label{font-size:.6rem;color:#92400e;background:#fef3c7;border-radius:3px;padding:1px 4px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 [data-theme="dark"] .cal-holiday-label{color:#fcd34d;background:rgba(251,191,36,.15)}
