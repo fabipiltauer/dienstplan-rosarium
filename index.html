@@ -375,12 +375,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   .pv-title{font-size:14pt;font-weight:700;text-align:center;margin-bottom:3px}
   .pv-subtitle{font-size:9pt;text-align:center;color:#666;margin-bottom:14px}
   .pv-week{page-break-after:always;break-after:page}.pv-week:last-child{page-break-after:avoid}
-  .pv-week-header{background:#4472C4;color:#fff;font-weight:700;font-size:10pt;padding:6px 10px;line-height:1.6}
+  .pv-week-header{background:#fff;color:#000;font-weight:700;font-size:10pt;padding:6px 0;line-height:1.6;border-bottom:2px solid #000}
   .pv-subinfo{font-size:8pt;font-weight:400;display:block}
   .pv-table{width:100%;border-collapse:collapse;font-size:9pt;table-layout:fixed}
-  .pv-table th{background:#D9D9D9;font-weight:700;padding:4px 8px;border:1px solid #555;text-align:left;font-size:8.5pt;width:25%}
-  .pv-table td{padding:5px 8px;border:1px solid #aaa;vertical-align:top;word-wrap:break-word}
-  .pv-td-day{}.pv-date{font-size:8pt;color:#555}.pv-td-info{background:#fafafa}
+  .pv-table th{background:#fff;color:#000;font-weight:700;padding:4px 8px;border:1px solid #000;text-align:left;font-size:8.5pt;width:25%}
+  .pv-table td{padding:5px 8px;border:1px solid #000;vertical-align:top;word-wrap:break-word;color:#000}
+  .pv-td-day{}.pv-date{font-size:8pt;color:#000}.pv-td-info{background:#fff}
   .pv-emp-entry{display:block;line-height:1.6;font-size:8.5pt;margin-bottom:1px}
   .pv-day-note{font-size:8pt;color:#7d6008;font-style:italic}
   .pv-abs{font-size:8pt;color:#555;font-style:italic}
@@ -2171,8 +2171,8 @@ function printPlan(){
           frueh.push(`${esc(emp.name)}: ${esc(ABS_TYPES[ab.type]?.label||ab.type)}`);
         }
       });
-      html+=`<tr${red?' style="background:#fff8f8"':''}>`;
-      html+=`<td class="pv-td-day" style="${red?'color:#c00;font-weight:700':''}">${WDAYS_S[dow]} ${dt.getDate()}.${isH?`<br><span class="pv-date">${esc(hLabel)}</span>`:''}</td>`;
+      html+=`<tr>`;
+      html+=`<td class="pv-td-day">${WDAYS_S[dow]} ${dt.getDate()}.${isH?`<br><span class="pv-date">${esc(hLabel)}</span>`:''}</td>`;
       html+=`<td>${frueh.length?frueh.map(e=>`<span class="pv-emp-entry">${e}</span>`).join(''):'—'}</td>`;
       html+=`<td>${spaet.length?spaet.map(e=>`<span class="pv-emp-entry">${e}</span>`).join(''):'—'}</td>`;
       html+=`<td class="pv-td-info">${note?`<span class="pv-day-note">${esc(note)}</span>`:''}</td></tr>`;
